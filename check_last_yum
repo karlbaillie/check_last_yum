@@ -1,0 +1,56 @@
+#!/bin/bash
+#
+# Check for yum package manager activity
+#
+# Usage: check_last_yum [-w minutes]
+#   -w, --warning WARNING	Warning threshold in minutes
+#   -h, --help			Display this screen
+#
+# (c) 2017, Karl Baillie <mail@kjbweb.net>
+# https://github.com/kjbweb/check_last_yum
+#
+
+while [[ -n "$1" ]]; do
+  case $1 in
+    --warning | -w)
+      warning=$2
+      shift
+      ;;
+    --help | -H)
+      sed -n '3,10p' "$0" | tr -d '#'
+      exit 3
+      ;;
+    *)
+      echo "Unknown argument: $1"
+      exec "$0" --help
+      exit 3
+      ;;
+  esac
+  shift
+done
+
+warning=${warning:=60}
+
+NAME=$(yum history | awk '/----------/{getline; print}' | head -1 | cut -d '|' -f 2 | xargs)
+DATE=$(yum history | awk '/----------/{getline; print}' | head -1 | cut -d '|' -f 3 | xargs)
+ACTION=$(yum history | awk '/----------/{getline; print}' | head -1 | cut -d '|' -f 4 | xargs)
+PACKAGES=$(yum history | awk '/----------/{getline; print}' | head -1 | cut -d '|' -f 5 | xargs)
+
+NOW=$(date +%s)
+NOW_MINUS_X=$((NOW - ($warning*60)))
+LAST_ACTION_TIME=$(date -d "$DATE" +%s)
+
+MESSAGE="$NAME performed $ACTION affecting $PACKAGES packages on $DATE"
+
+if [[ $LAST_ACTION_TIME -gt $NOW_MINUS_X ]]; then
+  echo "WARNING - ${MESSAGE}"
+  exit 1
+else
+  echo "OK - ${MESSAGE}"
+  exit 0
+fi
+
+echo "UNKNOWN - Error"
+exit 3
+
+# EOF
