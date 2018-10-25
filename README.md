@@ -1,4 +1,4 @@
-# check_last_yum
+# check_last_yum [![Build Status](https://travis-ci.org/kjbweb/check_last_yum.svg?branch=master)](https://travis-ci.org/kjbweb/check_last_yum)
 Nagios plugin to check for yum package manager activity
 
 ```
