@@ -29,6 +29,23 @@ while [[ -n "$1" ]]; do
   shift
 done
 
+function ok() {
+  echo "OK - $1"
+  exit 0
+}
+
+function warn() {
+  echo "WARNING - $1"
+  exit 1
+}
+
+function unknown() {
+  echo "UNKNOWN - $(if [ -z "$1" ]; then echo Error; else echo "$1"; fi)"
+  exit 3
+}
+
+command -v yum >/dev/null 2>&1 || unknown "YUM Command Not Defined"
+
 warning=${warning:=60}
 
 NAME=$(yum history | awk '/----------/{getline; print}' | head -1 | cut -d '|' -f 2 | xargs)
@@ -43,14 +60,11 @@ LAST_ACTION_TIME=$(date -d "$DATE" +%s)
 MESSAGE="$NAME performed $ACTION affecting $PACKAGES packages on $DATE"
 
 if [[ $LAST_ACTION_TIME -gt $NOW_MINUS_X ]]; then
-  echo "WARNING - ${MESSAGE}"
-  exit 1
+  warn $MESSAGE
+elif [[ $LAST_ACTION_TIME -lt $NOW_MINUS_X ]]; then
+  ok $MESSAGE
 else
-  echo "OK - ${MESSAGE}"
-  exit 0
+  unknown
 fi
-
-echo "UNKNOWN - Error"
-exit 3
 
 # EOF
