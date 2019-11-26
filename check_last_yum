@@ -46,6 +46,8 @@ function unknown() {
 
 command -v yum >/dev/null 2>&1 || unknown "YUM Command Not Defined"
 
+flock -w 10 100 || unknown "Another \"check_last_yum\" check is running, could not obtain lock"
+
 warning=${warning:=60}
 
 NAME=$(yum history | awk '/----------/{getline; print}' | head -1 | cut -d '|' -f 2 | xargs)
