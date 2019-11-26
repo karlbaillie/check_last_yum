@@ -7,5 +7,5 @@ addons:
     packages:
     - bats
     - bc
-    - flock
+    - util-linux
 script: bats check_last_yum.bats
