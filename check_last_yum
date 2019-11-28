@@ -30,12 +30,14 @@ while [[ -n "$1" ]]; do
 done
 
 function ok() {
-  echo "OK - $1"
+  local MESSAGE="$*"
+  echo "OK - $MESSAGE"
   exit 0
 }
 
 function warn() {
-  echo "WARNING - $1"
+  local MESSAGE="$*"
+  echo "WARNING - $MESSAGE"
   exit 1
 }
 
@@ -45,6 +47,9 @@ function unknown() {
 }
 
 command -v yum >/dev/null 2>&1 || unknown "YUM Command Not Defined"
+
+LOCK=/tmp/$(basename $0)
+exec 100>$LOCK
 
 flock -w 10 100 || unknown "Another \"check_last_yum\" check is running, could not obtain lock"
 
@@ -70,3 +75,4 @@ else
 fi
 
 # EOF
+
